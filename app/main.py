@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from app.api.v1.router import api_router
-from app.config import settings
-from app.core.exception_handler import app_exeception_handler
+from app.core.config import settings
+from app.core.exception_handler import app_exception_handler
 from app.core.exceptions import AppException
 from app.db.session import is_db_connected
 
@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_exception_handler(AppException, app_exeception_handler)
+app.add_exception_handler(AppException, app_exception_handler)
 
 app.include_router(api_router, prefix="/api/v1")
 

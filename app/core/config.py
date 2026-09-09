@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres@localhost:5432/db"
+    CORS_ORIGINS: str = "*"
 
     @property
     def cors_origins(self) -> list[str]:
