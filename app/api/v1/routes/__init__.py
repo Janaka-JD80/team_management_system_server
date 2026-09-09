@@ -1,0 +1,31 @@
+from app.api.v1.endpoints import (
+    health,
+    user,
+    test,
+    bed,
+    doctor,
+    nurse,
+    notification,
+    patient,
+    doctor,
+    accessory,
+    attendant,
+    dashboard,
+    websocket,
+)
+
+__all__ = [
+    "health",
+    "user",
+    "test",
+    "bed",
+    "doctor",
+    "nurse",
+    "notification",
+    "patient",
+    "doctor",
+    "accessory",
+    "attendant",
+    "dashboard",
+    "websocket",
+]
