@@ -15,11 +15,9 @@ from app.schemas.report import (
 )
 from app.services.report_service import report_service
 from app.schemas.auth import JwtPayload
-from app.core.deps import get_current_user, RequireRole
+from app.core.deps import get_current_user, RequirePermission
 
 router = APIRouter()
-
-require_manager = RequireRole("MANAGER")
 
 @router.get("/", response_model=List[ReportResponse])
 async def get_all_reports(
@@ -31,7 +29,7 @@ async def get_all_reports(
     end_date: Optional[date] = None,
     status_id: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
-    user: JwtPayload = Depends(require_manager)
+    user: JwtPayload = Depends(RequirePermission("view:all_reports"))
 ):
     return await report_service.get_all_reports(
         db, skip=skip, limit=limit, user_id=user_id, project_id=project_id,
@@ -43,14 +41,14 @@ async def get_report_summary(
     week_start_date: date,
     section: str = Query(..., description="E.g., blockers, achievements, tasks_completed, tasks_planned"),
     db: AsyncSession = Depends(get_db),
-    user: JwtPayload = Depends(require_manager)
+    user: JwtPayload = Depends(RequirePermission("view:all_reports"))
 ):
     return await report_service.get_weekly_section_summary(db, week_start_date=str(week_start_date), section=section)
 
 @router.post("/", response_model=ReportWithLatestVersionResponse, status_code=status.HTTP_201_CREATED)
 async def create_draft(
     report_in: ReportCreate,
-    user: JwtPayload = Depends(get_current_user),
+    user: JwtPayload = Depends(RequirePermission("submit:report")),
     db: AsyncSession = Depends(get_db)
 ):
     return await report_service.create_draft(db, user_id=user.sub, report_in=report_in)
@@ -80,7 +78,7 @@ async def get_report_history(report_id: str, db: AsyncSession = Depends(get_db))
 async def update_report(
     report_id: str,
     update_in: ReportUpdate,
-    user: JwtPayload = Depends(get_current_user),
+    user: JwtPayload = Depends(RequirePermission("edit:own_report")),
     db: AsyncSession = Depends(get_db)
 ):
     return await report_service.update_report(db, report_id=report_id, user_id=user.sub, update_in=update_in)
@@ -88,7 +86,7 @@ async def update_report(
 @router.post("/{report_id}/submit", response_model=ReportWithLatestVersionResponse)
 async def submit_report(
     report_id: str,
-    user: JwtPayload = Depends(get_current_user),
+    user: JwtPayload = Depends(RequirePermission("submit:report")),
     db: AsyncSession = Depends(get_db)
 ):
     return await report_service.submit_report(db, report_id=report_id, user_id=user.sub)
@@ -98,6 +96,6 @@ async def manager_review(
     report_id: str,
     review_in: ManagerReview,
     db: AsyncSession = Depends(get_db),
-    user: JwtPayload = Depends(require_manager)
+    user: JwtPayload = Depends(RequirePermission("review:report"))
 ):
     return await report_service.manager_review(db, report_id=report_id, action=review_in.action, comment=review_in.comment)

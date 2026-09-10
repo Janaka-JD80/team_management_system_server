@@ -25,9 +25,21 @@ class RequireRole:
         self.required_role = required_role
 
     def __call__(self, user: JwtPayload = Depends(get_current_user)):
-        if "ADMIN" not in user.roles and self.required_role not in user.roles:
+        if "admin" not in user.roles and self.required_role not in user.roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Operation requires {self.required_role} role",
+            )
+        return user
+
+class RequirePermission:
+    def __init__(self, required_permission: str):
+        self.required_permission = required_permission
+
+    def __call__(self, user: JwtPayload = Depends(get_current_user)):
+        if "admin" not in user.roles and self.required_permission not in user.permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Operation requires '{self.required_permission}' permission",
             )
         return user

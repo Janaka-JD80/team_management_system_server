@@ -47,15 +47,19 @@ class AuthService:
             full_name=user_in.full_name
         )
 
-        # Assign default role TEAM_MEMBER
-        default_role = await role_repository.get_role_by_name(db, name="TEAM_MEMBER")
+        # Assign default role team_member
+        default_role = await role_repository.get_role_by_name(db, name="team_member")
         if default_role:
             new_user.roles.append(default_role)
 
         new_user = await user_repository.create_user(db, new_user)
         
-        role_names = ["TEAM_MEMBER"] if default_role else []
-        permissions = []
+        # We need to reload to get permissions eager loaded
+        users = await user_repository.get_users_with_roles(db, search=user_in.user_email)
+        new_user = users[0]
+        
+        role_names = [role.role_name for role in new_user.roles]
+        permissions = list(set([perm.permission_name for role in new_user.roles for perm in role.permissions]))
 
         return self._generate_auth_response(new_user, role_names, permissions)
 
@@ -76,8 +80,7 @@ class AuthService:
             raise HTTPException(status_code=404, detail="User not found")
 
         role_names = [role.role_name for role in user.roles]
-        permissions = []
-        # In a full implementation, you would load permissions from the roles.
+        permissions = list(set([perm.permission_name for role in user.roles for perm in role.permissions]))
         
         return self._generate_auth_response(user, role_names, permissions)
 

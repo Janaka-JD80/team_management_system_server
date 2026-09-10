@@ -5,6 +5,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy import or_
 
 from app.models.user import User
+from app.models.role import Role
 
 class UserRepository:
     async def get_user_by_email(self, db: AsyncSession, email: str) -> Optional[User]:
@@ -15,7 +16,7 @@ class UserRepository:
     async def get_users_with_roles(
         self, db: AsyncSession, skip: int = 0, limit: int = 100, search: Optional[str] = None
     ) -> List[User]:
-        stmt = select(User).options(selectinload(User.roles))
+        stmt = select(User).options(selectinload(User.roles).selectinload(Role.permissions))
         if search:
             search_term = f"%{search}%"
             stmt = stmt.where(
