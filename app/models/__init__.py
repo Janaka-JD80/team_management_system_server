@@ -3,3 +3,7 @@ from .permission import Permission
 from .user import User
 from .role_permission import RolePermission
 from .user_role import UserRole
+from .project import Project
+from .report_status import ReportStatus
+from .report import Report
+from .report_version import ReportVersion
