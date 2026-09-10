@@ -78,7 +78,12 @@ class ReportRepository:
         start_date: Optional[date] = None, end_date: Optional[date] = None,
         status_id: Optional[str] = None
     ) -> List[Report]:
-        stmt = select(Report).options(selectinload(Report.status), selectinload(Report.project), selectinload(Report.user))
+        stmt = select(Report).options(
+            selectinload(Report.status), 
+            selectinload(Report.project), 
+            selectinload(Report.user),
+            selectinload(Report.versions)
+        )
         
         if user_id:
             stmt = stmt.where(Report.user_id == user_id)

@@ -1,0 +1,30 @@
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import date
+
+from app.db.session import get_db
+from app.schemas.analytics import DashboardSummaryResponse, DashboardChartsResponse
+from app.services.analytics_service import analytics_service
+from app.core.deps import RequireRole
+from app.schemas.auth import JwtPayload
+
+router = APIRouter()
+require_manager = RequireRole("MANAGER")
+
+@router.get("/summary", response_model=DashboardSummaryResponse)
+async def get_dashboard_summary(
+    week_start_date: date,
+    db: AsyncSession = Depends(get_db),
+    user: JwtPayload = Depends(require_manager)
+):
+    """Returns top-level KPIs for the manager dashboard for a specific week."""
+    return await analytics_service.get_dashboard_summary(db, week_start_date)
+
+@router.get("/charts", response_model=DashboardChartsResponse)
+async def get_dashboard_charts(
+    end_date: date,
+    db: AsyncSession = Depends(get_db),
+    user: JwtPayload = Depends(require_manager)
+):
+    """Returns aggregated data for pie charts (time spent) and line charts (tasks completed trend)."""
+    return await analytics_service.get_dashboard_charts(db, end_date)
