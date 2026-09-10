@@ -12,7 +12,7 @@ from alembic import context
 # access to the values within the .ini file in use.
 config = context.config
 
-from app.config import settings
+from app.core.config import settings
 from app.db.base import Base
 from app.models import *
 

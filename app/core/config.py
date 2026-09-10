@@ -1,8 +1,11 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql+asyncpg://postgres@localhost:5432/db"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres@localhost:5432/team_managemnt"
     CORS_ORIGINS: str = "*"
+    SECRET_KEY: str = "supersecretkey" # In production, this should be a strong random secret
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
     @property
     def cors_origins(self) -> list[str]:
@@ -12,6 +15,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 Settings.model_rebuild()
 
