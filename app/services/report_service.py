@@ -56,8 +56,10 @@ class ReportService:
         report.user_name = report.user.full_name if report.user else None
         report.project_name = report.project.name if report.project else None
         
-        # Attach latest version
+        # Attach latest and past versions
         report.latest_version = report.versions[0] if report.versions else None
+        report.past_versions = report.versions[1:] if report.versions and len(report.versions) > 1 else []
+        
         return report
 
     async def get_all_reports(self, db: AsyncSession, **kwargs) -> List[Report]:

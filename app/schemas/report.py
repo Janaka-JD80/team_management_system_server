@@ -85,8 +85,9 @@ class ReportResponse(BaseModel):
     status: ReportStatusResponse
 
 class ReportWithLatestVersionResponse(ReportResponse):
-    # For getting the full report, we include the latest version content
+    # For getting the full report, we include the latest version content and history
     latest_version: ReportVersionResponse
+    past_versions: List[ReportVersionResponse] = []
 
 class ReportSummaryResponse(BaseModel):
     user_id: UUID
