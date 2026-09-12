@@ -91,12 +91,14 @@ class ReportService:
         
         if report.status.status_name == "NEEDS_CORRECTION":
             report.current_version_num += 1
+            draft_status_id = await self._get_or_create_status(db, "DRAFT")
+            report.current_status_id = draft_status_id
             await report_repository.update_report(db, report)
             
             new_version = ReportVersion(
                 report_id=report.report_id,
                 version_num=report.current_version_num,
-                status_id=report.current_status_id,
+                status_id=draft_status_id,
                 tasks_completed=latest_version.tasks_completed,
                 tasks_planned=latest_version.tasks_planned,
                 blockers=latest_version.blockers,
@@ -138,13 +140,33 @@ class ReportService:
             raise HTTPException(status_code=400, detail="Only DRAFT or NEEDS_CORRECTION can be submitted")
 
         submitted_status_id = await self._get_or_create_status(db, "SUBMITTED")
-        report.current_status_id = submitted_status_id
-        await report_repository.update_report(db, report)
         
-        # Also update the latest version status
-        latest_version = report.latest_version
-        latest_version.status_id = submitted_status_id
-        db.add(latest_version)
+        if report.status.status_name == "NEEDS_CORRECTION":
+            report.current_version_num += 1
+            report.current_status_id = submitted_status_id
+            await report_repository.update_report(db, report)
+            
+            latest_version = report.latest_version
+            new_version = ReportVersion(
+                report_id=report.report_id,
+                version_num=report.current_version_num,
+                status_id=submitted_status_id,
+                tasks_completed=latest_version.tasks_completed,
+                tasks_planned=latest_version.tasks_planned,
+                blockers=latest_version.blockers,
+                achievements=latest_version.achievements,
+                hours_worked_by_type=latest_version.hours_worked_by_type,
+                optional_notes=latest_version.optional_notes
+            )
+            await report_repository.create_report_version(db, new_version)
+        else:
+            report.current_status_id = submitted_status_id
+            await report_repository.update_report(db, report)
+            
+            latest_version = report.latest_version
+            latest_version.status_id = submitted_status_id
+            db.add(latest_version)
+            
         await db.commit()
         
         return await self.get_report(db, report_id)
