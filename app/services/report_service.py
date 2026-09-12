@@ -154,10 +154,10 @@ class ReportService:
         if report.status.status_name != "SUBMITTED":
             raise HTTPException(status_code=400, detail="Can only review SUBMITTED reports")
 
-        if action not in ["APPROVE", "REQUEST_CHANGES"]:
+        if action not in ["Approved", "Needs Correction"]:
             raise HTTPException(status_code=400, detail="Invalid action")
 
-        new_status_name = "APPROVED" if action == "APPROVE" else "NEEDS_CORRECTION"
+        new_status_name = "APPROVED" if action == "Approved" else "NEEDS_CORRECTION"
         new_status_id = await self._get_or_create_status(db, new_status_name)
 
         report.current_status_id = new_status_id

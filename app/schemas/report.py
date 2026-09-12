@@ -68,7 +68,7 @@ class ReportUpdate(BaseModel):
     optional_notes: Optional[str] = None
     
 class ManagerReview(BaseModel):
-    action: str # "APPROVE" or "REQUEST_CHANGES"
+    action: str
     comment: Optional[str] = None
 
 class ReportResponse(BaseModel):
@@ -85,7 +85,6 @@ class ReportResponse(BaseModel):
     status: ReportStatusResponse
 
 class ReportWithLatestVersionResponse(ReportResponse):
-    # For getting the full report, we include the latest version content and history
     latest_version: ReportVersionResponse
     past_versions: List[ReportVersionResponse] = []
 
