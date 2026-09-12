@@ -121,6 +121,7 @@ class ReportRepository:
             select(Report)
             .options(
                 selectinload(Report.user),
+                selectinload(Report.status),
                 selectinload(Report.versions)
             )
             .where(Report.week_start_date == week_start_date)
