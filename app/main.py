@@ -5,8 +5,10 @@ import logging
 
 from app.api.v1.router import api_router
 from app.core.config import settings
-from app.core.exception_handler import app_exception_handler
+from app.core.exception_handler import app_exception_handler, http_exception_handler, validation_exception_handler, global_exception_handler
 from app.core.exceptions import AppException
+from fastapi.exceptions import RequestValidationError
+from fastapi import HTTPException
 from app.db.session import is_db_connected
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
@@ -30,6 +32,9 @@ app.add_middleware(
 app.add_middleware(AuthMiddleware)
 
 app.add_exception_handler(AppException, app_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, global_exception_handler)
 
 app.include_router(api_router, prefix="/api/v1")
 
@@ -37,7 +42,3 @@ app.include_router(api_router, prefix="/api/v1")
 async def startup_event():
     logging.info("Starting up...")
     logging.info(f"DB Status: {await is_db_connected()}")
-
-@app.get("/health")
-async def get_health():
-    return {"message": "Health OK"}

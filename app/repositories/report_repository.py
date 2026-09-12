@@ -47,10 +47,16 @@ class ReportRepository:
             .options(
                 selectinload(Report.status),
                 selectinload(Report.project),
+                selectinload(Report.user),
                 selectinload(Report.versions).selectinload(ReportVersion.status)
             )
             .where(Report.report_id == report_id)
         )
+        result = await db.execute(stmt)
+        return result.scalars().first()
+
+    async def get_report_by_user_and_week(self, db: AsyncSession, user_id: str, week_start_date: date) -> Optional[Report]:
+        stmt = select(Report).where(Report.user_id == user_id, Report.week_start_date == week_start_date)
         result = await db.execute(stmt)
         return result.scalars().first()
 
@@ -60,7 +66,7 @@ class ReportRepository:
     ) -> List[Report]:
         stmt = (
             select(Report)
-            .options(selectinload(Report.status), selectinload(Report.project))
+            .options(selectinload(Report.status), selectinload(Report.project), selectinload(Report.user))
             .where(Report.user_id == user_id)
         )
         if start_date:
@@ -76,7 +82,8 @@ class ReportRepository:
         self, db: AsyncSession, skip: int = 0, limit: int = 100,
         user_id: Optional[str] = None, project_id: Optional[str] = None,
         start_date: Optional[date] = None, end_date: Optional[date] = None,
-        status_id: Optional[str] = None
+        status_id: Optional[str] = None, exclude_drafts: bool = True,
+        search: Optional[str] = None
     ) -> List[Report]:
         stmt = select(Report).options(
             selectinload(Report.status), 
@@ -95,6 +102,15 @@ class ReportRepository:
             stmt = stmt.where(Report.week_end_date <= end_date)
         if status_id:
             stmt = stmt.where(Report.current_status_id == status_id)
+            
+        if exclude_drafts:
+            stmt = stmt.join(ReportStatus, Report.current_status_id == ReportStatus.status_id).where(
+                ReportStatus.status_name.notin_(["DRAFT", "NEEDS_CORRECTION"])
+            )
+            
+        if search:
+            from app.models.user import User
+            stmt = stmt.join(User, Report.user_id == User.user_id).where(User.full_name.ilike(f"%{search}%"))
             
         stmt = stmt.order_by(Report.week_start_date.desc()).offset(skip).limit(limit)
         result = await db.execute(stmt)

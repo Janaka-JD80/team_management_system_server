@@ -3,11 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.schemas.auth import UserCreate, UserLogin, JwtPayload, TokenResponse
+from app.schemas.base import StandardResponse
 from app.services.auth_service import auth_service
 
 router = APIRouter()
 
-@router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+@router.post("/signup", response_model=StandardResponse[TokenResponse], status_code=status.HTTP_200_OK)
 async def signup(
     new_user: UserCreate, 
     response: Response, 
@@ -22,9 +23,9 @@ async def signup(
         samesite="lax",
         secure=True
     )
-    return TokenResponse(access_token=access_token, user=payload)
+    return StandardResponse(data=TokenResponse(access_token=access_token, user=payload))
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=StandardResponse[TokenResponse])
 async def login(
     credentials: UserLogin, 
     response: Response, 
@@ -39,7 +40,7 @@ async def login(
         samesite="lax",
         secure=True
     )
-    return TokenResponse(access_token=access_token, user=payload)
+    return StandardResponse(data=TokenResponse(access_token=access_token, user=payload))
 
 @router.post("/logout")
 async def logout(response: Response):
@@ -49,4 +50,4 @@ async def logout(response: Response):
         samesite="lax",
         secure=True
     )
-    return {"message": "Successfully logged out"}
+    return StandardResponse(message="Successfully logged out")

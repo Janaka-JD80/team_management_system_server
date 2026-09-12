@@ -15,6 +15,10 @@ class ReportService:
         return status.status_id
 
     async def create_draft(self, db: AsyncSession, user_id: str, report_in: ReportCreate) -> Report:
+        existing = await report_repository.get_report_by_user_and_week(db, user_id, report_in.week_start_date)
+        if existing:
+            raise HTTPException(status_code=400, detail="A report already exists for this week.")
+            
         draft_status_id = await self._get_or_create_status(db, "DRAFT")
         
         report = Report(
@@ -47,15 +51,28 @@ class ReportService:
         report = await report_repository.get_report_by_id(db, report_id)
         if not report:
             raise HTTPException(status_code=404, detail="Report not found")
+        
+        # Manually map nested relationships for Pydantic
+        report.user_name = report.user.full_name if report.user else None
+        report.project_name = report.project.name if report.project else None
+        
         # Attach latest version
         report.latest_version = report.versions[0] if report.versions else None
         return report
 
     async def get_all_reports(self, db: AsyncSession, **kwargs) -> List[Report]:
-        return await report_repository.get_all_reports(db, **kwargs)
+        reports = await report_repository.get_all_reports(db, **kwargs)
+        for report in reports:
+            report.user_name = report.user.full_name if report.user else None
+            report.project_name = report.project.name if report.project else None
+        return reports
 
     async def get_user_reports(self, db: AsyncSession, **kwargs) -> List[Report]:
-        return await report_repository.get_user_reports(db, **kwargs)
+        reports = await report_repository.get_user_reports(db, **kwargs)
+        for report in reports:
+            report.user_name = report.user.full_name if report.user else None
+            report.project_name = report.project.name if report.project else None
+        return reports
 
     async def get_report_versions(self, db: AsyncSession, report_id: str) -> List[ReportVersion]:
         return await report_repository.get_report_versions(db, report_id=report_id)

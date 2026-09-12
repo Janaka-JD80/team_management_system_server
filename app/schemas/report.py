@@ -75,7 +75,9 @@ class ReportResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     report_id: UUID
     user_id: UUID
+    user_name: Optional[str] = None
     project_id: Optional[UUID] = None
+    project_name: Optional[str] = None
     week_start_date: date
     week_end_date: date
     current_status_id: UUID

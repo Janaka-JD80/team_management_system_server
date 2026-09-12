@@ -56,10 +56,35 @@ async def seed_reports(db: AsyncSession):
                 report_id=report.report_id,
                 version_num=1,
                 status_id=status_map[status_name],
-                tasks_completed=[{"id": 1, "task": f"Completed task for week {week_start}", "status": "Done"}, {"id": 2, "task": "Fixed a critical bug", "status": "Done"}],
-                tasks_planned=[{"id": 3, "task": "Plan for next week", "status": "Todo"}],
-                blockers=["Database access issues"] if random.random() > 0.7 else [],
-                achievements=["Shipped new feature"] if random.random() > 0.6 else [],
+                tasks_completed=[
+                    {
+                        "task_name": f"Completed task for week {week_start}",
+                        "priority": "High",
+                        "planned_percent": 100,
+                        "actual_percent": 100,
+                        "status": "Done",
+                        "time_planned_hours": 10,
+                        "time_spent_hours": 12
+                    },
+                    {
+                        "task_name": "Fixed a critical bug",
+                        "priority": "High",
+                        "planned_percent": 100,
+                        "actual_percent": 100,
+                        "status": "Done",
+                        "time_planned_hours": 5,
+                        "time_spent_hours": 5
+                    }
+                ],
+                tasks_planned=[
+                    {
+                        "task_name": "Plan for next week",
+                        "priority": "Medium",
+                        "time_planned_hours": 15
+                    }
+                ],
+                blockers=[{"description": "Database access issues", "is_key_issue": True}] if random.random() > 0.7 else [],
+                achievements=[{"description": "Shipped new feature", "is_key_achievement": True}] if random.random() > 0.6 else [],
                 hours_worked_by_type={"Development": random.randint(20, 35), "Meetings": random.randint(2, 10), "Documentation": random.randint(1, 5)}
             )
             db.add(version)

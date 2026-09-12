@@ -17,7 +17,7 @@ class Report(Base):
     current_version_num = Column(Integer, default=1, nullable=False)
 
     # Relationships
-    user = relationship("User")
-    project = relationship("Project")
+    user = relationship("User", back_populates="reports")
+    project = relationship("Project", back_populates="reports")
     status = relationship("ReportStatus")
-    versions = relationship("ReportVersion", back_populates="report", cascade="all, delete-orphan")
+    versions = relationship("ReportVersion", back_populates="report", cascade="all, delete-orphan", order_by="desc(ReportVersion.version_num)")

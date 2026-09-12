@@ -14,3 +14,4 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     roles = relationship("Role", secondary="v1_user_roles", back_populates="users", lazy="selectin")
+    reports = relationship("Report", back_populates="user")

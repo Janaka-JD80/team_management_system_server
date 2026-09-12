@@ -4,11 +4,12 @@ from uuid import UUID
 
 class JwtPayload(BaseModel):
     sub: str
+    user_id: Optional[str] = None
     exp: int
     user_email: str
     full_name: Optional[str] = None
-    roles: List[str] = []
-    permissions: List[str] = []
+    roles: Optional[List[str]] = None
+    permissions: Optional[List[str]] = None
 
 class TokenResponse(BaseModel):
     access_token: str

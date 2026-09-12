@@ -20,7 +20,7 @@ def create_access_token(subject: Union[str, Any], user_email: str, full_name: st
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
-    to_encode = {"exp": expire, "sub": str(subject), "user_email": user_email}
+    to_encode = {"exp": expire, "sub": str(subject), "user_id": str(subject), "user_email": user_email}
     if full_name:
         to_encode["full_name"] = full_name
     if roles:
