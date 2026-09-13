@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import date
 
 from app.db.session import get_db
-from app.schemas.analytics import DashboardSummaryResponse, DashboardChartsResponse
+from app.schemas.analytics import DashboardSummaryResponse, DashboardChartsResponse, TeamMemberStatsResponse
 from app.schemas.base import StandardResponse
 from app.services.analytics_service import analytics_service
 from app.core.deps import RequirePermission
@@ -29,4 +29,13 @@ async def get_dashboard_charts(
 ):
     """Returns aggregated data for pie charts (time spent) and line charts (tasks completed trend)."""
     data = await analytics_service.get_dashboard_charts(db, end_date)
+    return StandardResponse(data=data)
+
+@router.get("/users/{user_id}/stats", response_model=StandardResponse[TeamMemberStatsResponse])
+async def get_team_member_stats(
+    user_id: str,
+    db: AsyncSession = Depends(get_db),
+    user: JwtPayload = Depends(RequirePermission("view:dashboard"))
+):
+    data = await analytics_service.get_team_member_stats(db, user_id)
     return StandardResponse(data=data)

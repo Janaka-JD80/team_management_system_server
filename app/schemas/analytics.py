@@ -28,3 +28,13 @@ class DashboardSummaryResponse(BaseModel):
     needs_correction: int
     open_blockers: int
     compliance_rate: Dict[str, int]
+
+class TeamMemberStatsResponse(BaseModel):
+    user_id: str
+    full_name: str
+    total_reports: int
+    total_tasks_completed: int
+    avg_tasks_per_week: float
+    total_hours_logged: float
+    tasks_completed_trend: List[LineChartDataPoint]
+    time_by_task_type: Dict[str, float]

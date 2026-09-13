@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any
 from datetime import date, timedelta
 from app.repositories.report_repository import report_repository
+from app.repositories.user_repository import user_repository
+from fastapi import HTTPException
 
 class AnalyticsService:
     async def get_dashboard_summary(self, db: AsyncSession, week_start_date: date) -> Dict[str, Any]:
@@ -118,6 +120,56 @@ class AnalyticsService:
             "status_by_member": status_by_member,
             "workload_by_project": workload_by_project,
             "recent_activity": recent_activity
+        }
+
+    async def get_team_member_stats(self, db: AsyncSession, user_id: str) -> Dict[str, Any]:
+        
+        user = await user_repository.get_user_by_id(db, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        reports = await report_repository.get_all_reports(db, user_id=user_id, exclude_drafts=True, limit=1000)
+        
+        total_tasks_completed = 0
+        total_hours_logged = 0.0
+        tasks_completed_trend_map: Dict[str, int] = {}
+        time_by_task_type: Dict[str, float] = {}
+        
+        for report in reports:
+            week_str = report.week_start_date.isoformat()
+            
+            if week_str not in tasks_completed_trend_map:
+                tasks_completed_trend_map[week_str] = 0
+                
+            if report.versions:
+                latest_version = report.versions[0]
+                tasks_completed = latest_version.tasks_completed or []
+                
+                num_tasks = len(tasks_completed)
+                total_tasks_completed += num_tasks
+                tasks_completed_trend_map[week_str] += num_tasks
+                
+                hours_by_type = latest_version.hours_worked_by_type or {}
+                for task_type, hours in hours_by_type.items():
+                    if task_type not in time_by_task_type:
+                        time_by_task_type[task_type] = 0.0
+                    time_by_task_type[task_type] += hours
+                    total_hours_logged += hours
+
+        total_reports = len(reports)
+        avg_tasks_per_week = (total_tasks_completed / total_reports) if total_reports > 0 else 0.0
+        
+        tasks_completed_trend = [{"date": k, "value": v} for k, v in sorted(tasks_completed_trend_map.items())]
+
+        return {
+            "user_id": str(user.user_id),
+            "full_name": user.full_name or "Unknown User",
+            "total_reports": total_reports,
+            "total_tasks_completed": total_tasks_completed,
+            "avg_tasks_per_week": avg_tasks_per_week,
+            "total_hours_logged": total_hours_logged,
+            "tasks_completed_trend": tasks_completed_trend,
+            "time_by_task_type": time_by_task_type
         }
 
 analytics_service = AnalyticsService()
