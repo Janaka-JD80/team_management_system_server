@@ -3,9 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
 from app.db.session import get_db
-from app.schemas.access_control import RoleResponse, RoleWithPermissionsResponse, RoleCreate
+from app.schemas.access_control import RoleResponse, RoleWithPermissionsResponse, RoleCreate, AssignPermissions
 from app.schemas.base import StandardResponse
 from app.services.access_control_service import access_control_service
+from app.core.deps import RequirePermission
+from app.schemas.auth import JwtPayload
 
 router = APIRouter()
 
@@ -33,3 +35,14 @@ async def create_role(role_in: RoleCreate, db: AsyncSession = Depends(get_db)):
 async def delete_role(role_id: str, db: AsyncSession = Depends(get_db)):
     await access_control_service.delete_role(db, role_id=role_id)
     return StandardResponse(message="Role deleted successfully")
+
+@router.put("/{role_id}/permissions", response_model=StandardResponse[RoleWithPermissionsResponse])
+async def assign_permissions(
+    role_id: str,
+    payload: AssignPermissions,
+    db: AsyncSession = Depends(get_db),
+    user: JwtPayload = Depends(RequirePermission("manage:roles"))
+):
+    permission_ids = [str(pid) for pid in payload.permission_ids]
+    data = await access_control_service.assign_permissions_to_role(db, role_id, permission_ids)
+    return StandardResponse(data=data)

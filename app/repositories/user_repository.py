@@ -13,6 +13,11 @@ class UserRepository:
         result = await db.execute(stmt)
         return result.scalars().first()
 
+    async def get_user_by_id(self, db: AsyncSession, user_id: str) -> Optional[User]:
+        stmt = select(User).options(selectinload(User.roles)).where(User.user_id == user_id)
+        result = await db.execute(stmt)
+        return result.scalars().first()
+
     async def get_users_with_roles(
         self, db: AsyncSession, skip: int = 0, limit: int = 100, search: Optional[str] = None
     ) -> List[User]:

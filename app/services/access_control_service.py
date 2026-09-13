@@ -37,4 +37,34 @@ class AccessControlService:
     async def get_all_permissions(self, db: AsyncSession, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[Permission]:
         return await permission_repository.get_all_permissions(db, skip=skip, limit=limit, search=search)
 
+    async def assign_roles_to_user(self, db: AsyncSession, user_id: str, role_ids: List[str]) -> User:
+        user = await user_repository.get_user_by_id(db, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        roles = []
+        for rid in set(role_ids):
+            role = await role_repository.get_role_with_permissions(db, str(rid))
+            if role:
+                roles.append(role)
+        user.roles = roles
+        await db.commit()
+        await db.refresh(user)
+        return user
+
+    async def assign_permissions_to_role(self, db: AsyncSession, role_id: str, permission_ids: List[str]) -> Role:
+        role = await role_repository.get_role_with_permissions(db, role_id)
+        if not role:
+            raise HTTPException(status_code=404, detail="Role not found")
+            
+        permissions = []
+        for pid in set(permission_ids):
+            perm = await permission_repository.get_permission_by_id(db, str(pid))
+            if perm:
+                permissions.append(perm)
+        role.permissions = permissions
+        await db.commit()
+        await db.refresh(role)
+        return role
+
 access_control_service = AccessControlService()

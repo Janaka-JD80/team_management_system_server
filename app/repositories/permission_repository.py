@@ -15,4 +15,9 @@ class PermissionRepository:
         result = await db.execute(stmt)
         return result.scalars().all()
 
+    async def get_permission_by_id(self, db: AsyncSession, permission_id: str) -> Optional[Permission]:
+        stmt = select(Permission).where(Permission.permission_id == permission_id)
+        result = await db.execute(stmt)
+        return result.scalars().first()
+
 permission_repository = PermissionRepository()

@@ -31,3 +31,9 @@ class UserResponse(BaseModel):
 
 class UserWithRolesResponse(UserResponse):
     roles: List[RoleResponse] = []
+
+class AssignRoles(BaseModel):
+    role_ids: List[UUID]
+
+class AssignPermissions(BaseModel):
+    permission_ids: List[UUID]
