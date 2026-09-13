@@ -139,4 +139,17 @@ class ReportRepository:
         result = await db.execute(stmt)
         return result.scalars().all()
 
+    async def get_recent_report_versions(self, db: AsyncSession, limit: int = 10) -> List[ReportVersion]:
+        stmt = (
+            select(ReportVersion)
+            .options(
+                selectinload(ReportVersion.report).selectinload(Report.user),
+                selectinload(ReportVersion.status)
+            )
+            .order_by(ReportVersion.created_at.desc())
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        return result.scalars().all()
+
 report_repository = ReportRepository()

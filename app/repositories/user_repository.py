@@ -34,6 +34,11 @@ class UserRepository:
         result = await db.execute(stmt)
         return result.scalars().unique().all()
 
+    async def get_team_members(self, db: AsyncSession) -> List[User]:
+        stmt = select(User).join(User.roles).where(Role.role_name == "team_member")
+        result = await db.execute(stmt)
+        return result.scalars().unique().all()
+
     async def create_user(self, db: AsyncSession, user: User) -> User:
         db.add(user)
         await db.commit()
