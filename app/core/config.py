@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "*"
     SECRET_KEY: str = "supersecretkey"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30240
     ENVIRONMENT: str = "development"
     GEMINI_API_KEY: str = ""
     GROQ_API_KEY: str = ""

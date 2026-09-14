@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
 
 app = FastAPI(
     redirect_slashes=True,
-    title="FastAPI Boilerplate",
+    title="Team Management System",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"

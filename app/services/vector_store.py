@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from app.core.config import settings
 import chromadb
 from sqlalchemy import text
-from app.db.session import async_session
+from app.db.session import AsyncSessionLocal
 
 
 class BaseVectorStore(ABC):
@@ -63,8 +63,8 @@ class PgVectorStore(BaseVectorStore):
             );
         '''))
         
-    async def upsert(self, doc_id: str, text_content: str, embedding: List[float]):        
-        async with async_session() as session:
+    async def upsert(self, doc_id: str, text_content: str, embedding: List[float], metadata: Dict[str, Any]):
+        async with AsyncSessionLocal() as session:
             async with session.begin():
                 await self._init_table(session)
                 stmt = text('''
@@ -80,8 +80,8 @@ class PgVectorStore(BaseVectorStore):
                     "emb": str(embedding)
                 })
                 
-    async def search(self, embedding: List[float], limit: int = 5) -> List[Dict[str, Any]]:      
-        async with async_session() as session:
+    async def search(self, embedding: List[float], limit: int = 5, filter_metadata: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:     
+        async with AsyncSessionLocal() as session:
             await self._init_table(session)
             query = "SELECT report_id, content FROM v1_report_embeddings"
             params = {"emb": str(embedding), "limit": limit}

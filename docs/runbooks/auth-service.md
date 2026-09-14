@@ -1,7 +1,7 @@
 # Authentication & Authorization Runbook
 
 ## 1. Executive Summary & Purpose
-This document outlines the authentication and authorization flow for the **Weekly Report Generator & Team Dashboard**. The application uses a stateless, JWT-based authentication mechanism. JSON Web Tokens (JWTs) are issued upon successful login or registration and are securely transported via `HTTP-Only` cookies to protect against Cross-Site Scripting (XSS) attacks. 
+This document outlines the authentication and authorization flow for the **Team management System**. The application uses a stateless, JWT-based authentication mechanism. JSON Web Tokens (JWTs) are issued upon successful login or registration and are securely transported via `HTTP-Only` cookies to protect against Cross-Site Scripting (XSS) attacks. 
 
 Role-Based Access Control (RBAC) ensures users (Team Members, Managers, Admins) only access their authorized endpoints.
 
@@ -10,33 +10,6 @@ Role-Based Access Control (RBAC) ensures users (Team Members, Managers, Admins) 
 ## 2. Architecture Overview
 
 The system employs a client-server architecture where the frontend client requests authentication from the FastAPI backend. Once authenticated, the server drops an HTTP-only cookie onto the client.
-
-### Authentication Flow Diagram
-
-```mermaid
-sequenceDiagram
-    participant Client as Web Client
-    participant API as FastAPI Backend
-    participant DB as PostgreSQL DB
-
-    Note over Client,DB: 1. User Authentication
-    Client->>API: POST /api/v1/auth/login (email, password)
-    API->>DB: Query User by Email
-    DB-->>API: Return User & Hashed Password
-    API->>API: Verify Password (bcrypt)
-    
-    Note over Client,API: 2. Token Issuance
-    API->>API: Generate JWT (sub=user_id, exp, permissions)
-    API-->>Client: 200 OK + Set-Cookie: access_token (HTTP-Only)
-    
-    Note over Client,DB: 3. Authenticated Request
-    Client->>API: GET /api/v1/reports (Cookie: access_token)
-    API->>API: AuthMiddleware validates JWT signature
-    API->>API: Extract JwtPayload -> request.state.user
-    API->>DB: Query requested resource
-    DB-->>API: Return data
-    API-->>Client: 200 OK (JSON data)
-```
 
 ### Component Definitions
 - **Identity Store:** PostgreSQL (`users`, `roles`, `permissions`, `user_roles`, `role_permissions` tables).
@@ -98,7 +71,7 @@ curl -X POST "http://localhost:8000/api/v1/auth/logout"
 
 ## 4. Security & Maintenance Guardrails
 
-- **Token Expiration**: Access tokens are configured to expire in 24 hours (`ACCESS_TOKEN_EXPIRE_MINUTES = 1440`). Upon expiration, the client receives a `401 Unauthorized` and must re-authenticate.
+- **Token Expiration**: Access tokens are configured to expire in 21 days (`ACCESS_TOKEN_EXPIRE_MINUTES = 30240`). Upon expiration, the client receives a `401 Unauthorized` and must re-authenticate.
 - **Password Hashing**: Passwords are mathematically hashed using `bcrypt` (via `passlib`) before persistence. Raw passwords are never stored.
 - **Secret Management**: The JWT signing key (`SECRET_KEY`) must be a strong, unpredictable cryptographic string, loaded entirely from the `.env` configuration file. Do not hardcode secrets into the source code.
 - **Cookie Security Options**: 
