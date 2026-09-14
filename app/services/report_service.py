@@ -6,6 +6,8 @@ from app.models.report import Report
 from app.models.report_version import ReportVersion
 from app.schemas.report import ReportCreate, ReportUpdate
 from app.repositories.report_repository import report_repository
+from app.services.ai_assistant_service import ai_assistant_service
+import asyncio
 
 class ReportService:
     async def _get_or_create_status(self, db: AsyncSession, name: str) -> str:
@@ -168,6 +170,7 @@ class ReportService:
             db.add(latest_version)
             
         await db.commit()
+        asyncio.create_task(ai_assistant_service.sync_report_to_vector_db(db, report_id))
         
         return await self.get_report(db, report_id)
 
@@ -190,6 +193,7 @@ class ReportService:
         latest_version.manager_comment = comment
         db.add(latest_version)
         await db.commit()
+        asyncio.create_task(ai_assistant_service.sync_report_to_vector_db(db, report_id))
 
         return await self.get_report(db, report_id)
 
