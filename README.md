@@ -267,6 +267,6 @@ See [docs/development/rag-implementation.md](./docs/development/rag-implementati
 
 <div align="center">
 
-Made with ❤️ for better team productivity · **Sisenco Digital**
+Made with ❤️ for better team productivity
 
 </div>
