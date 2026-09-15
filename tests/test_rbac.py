@@ -31,7 +31,7 @@ def test_team_member_cannot_access_manager_endpoint():
     
     response = client.get("/api/v1/reports/")
     assert response.status_code == 403
-    assert response.json()["detail"] == "Operation requires 'view:all_reports' permission"
+    assert response.json()["message"] == "Operation requires 'view:all_reports' permission"
     
     app.dependency_overrides.clear()
 
@@ -48,6 +48,6 @@ def test_team_member_cannot_create_project():
     
     response = client.post("/api/v1/projects/", json={"name": "Test", "description": "Desc"})
     assert response.status_code == 403
-    assert response.json()["detail"] == "Operation requires 'manage:projects' permission"
+    assert response.json()["message"] == "Operation requires 'manage:projects' permission"
     
     app.dependency_overrides.clear()

@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+import os
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import text
@@ -8,7 +9,7 @@ from app.db.base import Base
 from app.db.session import get_db
 
 # Test Database setup
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres@localhost:5432/test_db"
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql+asyncpg://postgres:TestPassw0rd_123!@localhost:5432/test_db")
 engine = create_async_engine(TEST_DATABASE_URL, future=True, echo=False)
 TestingSessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
