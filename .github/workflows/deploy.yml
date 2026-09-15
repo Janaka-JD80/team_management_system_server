@@ -76,8 +76,39 @@ jobs:
           script: |
             cd /var/www/tms-server/team_management_system_server || exit
             git pull origin main
+            
+            # 1. Create virtual environment if missing
+            if [ ! -d ".venv" ]; then
+              python3 -m venv .venv
+            fi
+            
+            # 2. Activate and install
             source .venv/bin/activate
             pip install -r requirements.txt
-            alembic upgrade head
+            
+            # 3. Run migrations
+            python -m alembic upgrade head
+            
+            # 4. Create systemd service if missing
+            if [ ! -f "/etc/systemd/system/fastapi.service" ]; then
+              echo "[Unit]
+            Description=Gunicorn instance to serve FastAPI
+            After=network.target
+
+            [Service]
+            User=ubuntu
+            Group=www-data
+            WorkingDirectory=/var/www/tms-server/team_management_system_server
+            Environment=\"PATH=/var/www/tms-server/team_management_system_server/.venv/bin\"
+            ExecStart=/var/www/tms-server/team_management_system_server/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 5008
+
+            [Install]
+            WantedBy=multi-user.target" | sudo tee /etc/systemd/system/fastapi.service
+              
+              sudo systemctl daemon-reload
+              sudo systemctl enable fastapi
+            fi
+            
+            # 5. Restart and verify
             sudo systemctl restart fastapi
             sudo systemctl is-active fastapi
