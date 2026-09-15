@@ -63,7 +63,7 @@ class PgVectorStore(BaseVectorStore):
             );
         '''))
         
-    async def upsert(self, doc_id: str, text_content: str, embedding: List[float], metadata: Dict[str, Any]):
+    async def upsert(self, doc_id: str, text: str, embedding: List[float]):
         async with AsyncSessionLocal() as session:
             async with session.begin():
                 await self._init_table(session)
@@ -76,7 +76,7 @@ class PgVectorStore(BaseVectorStore):
                 ''')
                 await session.execute(stmt, {
                     "id": doc_id,
-                    "content": text_content,
+                    "content": text,
                     "emb": str(embedding)
                 })
                 
