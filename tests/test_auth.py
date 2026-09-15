@@ -4,13 +4,14 @@ import os
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import text
+from sqlalchemy.pool import NullPool
 from app.main import app
 from app.db.base import Base
 from app.db.session import get_db
 
 # Test Database setup
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql+asyncpg://postgres:TestPassw0rd_123!@localhost:5432/test_db")
-engine = create_async_engine(TEST_DATABASE_URL, future=True, echo=False)
+engine = create_async_engine(TEST_DATABASE_URL, future=True, echo=False, poolclass=NullPool)
 TestingSessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
 async def override_get_db():
@@ -19,7 +20,7 @@ async def override_get_db():
 
 app.dependency_overrides[get_db] = override_get_db
 
-@pytest_asyncio.fixture(autouse=True, scope="module")
+@pytest_asyncio.fixture(autouse=True)
 async def setup_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -49,6 +50,12 @@ async def test_signup(async_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_login(async_client: AsyncClient):
+    # Setup user
+    await async_client.post(
+        "/api/v1/auth/signup",
+        json={"user_email": "test@example.com", "password": "password123", "full_name": "Test User"}
+    )
+    
     response = await async_client.post(
         "/api/v1/auth/login",
         json={"user_email": "test@example.com", "password": "password123"}
@@ -63,6 +70,12 @@ async def test_login(async_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_login_invalid(async_client: AsyncClient):
+    # Setup user
+    await async_client.post(
+        "/api/v1/auth/signup",
+        json={"user_email": "test@example.com", "password": "password123", "full_name": "Test User"}
+    )
+    
     response = await async_client.post(
         "/api/v1/auth/login",
         json={"user_email": "test@example.com", "password": "wrongpassword"}
