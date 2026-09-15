@@ -23,10 +23,9 @@ app.dependency_overrides[get_db] = override_get_db
 @pytest_asyncio.fixture(autouse=True)
 async def setup_db():
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
 
 @pytest_asyncio.fixture
 async def async_client():
@@ -41,8 +40,10 @@ async def test_signup(async_client: AsyncClient):
     )
     assert response.status_code == 200
     data = response.json()
-    assert "sub" in data
-    assert "exp" in data
+    assert data["status"] is True
+    assert "access_token" in data["data"]
+    assert "sub" in data["data"]["user"]
+    assert "exp" in data["data"]["user"]
     
     # Check for httponly cookie
     cookie = response.cookies.get("access_token")
@@ -62,8 +63,10 @@ async def test_login(async_client: AsyncClient):
     )
     assert response.status_code == 200
     data = response.json()
-    assert "sub" in data
-    assert "exp" in data
+    assert data["status"] is True
+    assert "access_token" in data["data"]
+    assert "sub" in data["data"]["user"]
+    assert "exp" in data["data"]["user"]
     
     cookie = response.cookies.get("access_token")
     assert cookie is not None
