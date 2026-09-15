@@ -59,7 +59,7 @@ class PgVectorStore(BaseVectorStore):
             CREATE TABLE IF NOT EXISTS v1_report_embeddings (
                 report_id VARCHAR PRIMARY KEY,
                 content TEXT NOT NULL,
-                embedding vector(768)
+                embedding vector(3072)
             );
         '''))
         
