@@ -3,7 +3,7 @@ from typing import List, Dict, Any, Optional
 from abc import ABC, abstractmethod
 from app.core.config import settings
 import chromadb
-from sqlalchemy import text
+from sqlalchemy import text as sql_text
 from app.db.session import AsyncSessionLocal
 
 
@@ -54,8 +54,8 @@ class PgVectorStore(BaseVectorStore):
         pass
         
     async def _init_table(self, conn):   
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
-        await conn.execute(text('''
+        await conn.execute(sql_text("CREATE EXTENSION IF NOT EXISTS vector;"))
+        await conn.execute(sql_text('''
             CREATE TABLE IF NOT EXISTS v1_report_embeddings (
                 report_id VARCHAR PRIMARY KEY,
                 content TEXT NOT NULL,
@@ -67,7 +67,7 @@ class PgVectorStore(BaseVectorStore):
         async with AsyncSessionLocal() as session:
             async with session.begin():
                 await self._init_table(session)
-                stmt = text('''
+                stmt = sql_text('''
                     INSERT INTO v1_report_embeddings (report_id, content, embedding)
                     VALUES (:id, :content, :emb)
                     ON CONFLICT (report_id) DO UPDATE SET
@@ -86,7 +86,7 @@ class PgVectorStore(BaseVectorStore):
             query = "SELECT report_id, content FROM v1_report_embeddings"
             params = {"emb": str(embedding), "limit": limit}
             query += " ORDER BY embedding <-> :emb LIMIT :limit"
-            result = await session.execute(text(query), params)
+            result = await session.execute(sql_text(query), params)
             rows = result.fetchall()
             
             return [
