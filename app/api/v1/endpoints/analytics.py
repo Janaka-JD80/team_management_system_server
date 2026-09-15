@@ -17,7 +17,6 @@ async def get_dashboard_summary(
     db: AsyncSession = Depends(get_db),
     user: JwtPayload = Depends(RequirePermission("view:dashboard"))
 ):
-    """Returns top-level KPIs for the manager dashboard for a specific week."""
     data = await analytics_service.get_dashboard_summary(db, week_start_date)
     return StandardResponse(data=data)
 
@@ -27,7 +26,6 @@ async def get_dashboard_charts(
     db: AsyncSession = Depends(get_db),
     user: JwtPayload = Depends(RequirePermission("view:dashboard"))
 ):
-    """Returns aggregated data for pie charts (time spent) and line charts (tasks completed trend)."""
     data = await analytics_service.get_dashboard_charts(db, end_date)
     return StandardResponse(data=data)
 

@@ -54,7 +54,7 @@ class AuthService:
 
         new_user = await user_repository.create_user(db, new_user)
         
-        # We need to reload to get permissions eager loaded
+        # reload to get permissions eager loaded
         users = await user_repository.get_users_with_roles(db, search=user_in.user_email)
         new_user = users[0]
         

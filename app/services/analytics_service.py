@@ -6,9 +6,7 @@ from app.repositories.user_repository import user_repository
 from fastapi import HTTPException
 
 class AnalyticsService:
-    async def get_dashboard_summary(self, db: AsyncSession, week_start_date: date) -> Dict[str, Any]:
-        from app.repositories.user_repository import user_repository
-        
+    async def get_dashboard_summary(self, db: AsyncSession, week_start_date: date) -> Dict[str, Any]:        
         team_members = await user_repository.get_team_members(db)
         reports = await report_repository.get_reports_by_week(db, week_start_date)
         

@@ -190,8 +190,7 @@ class ReportService:
         
         summary = []
         for report in reports:
-            # We only want reports that are submitted or approved/needs correction, 
-            # meaning they have been shared with the manager. If it's a draft, skip it.
+           
             if report.status.status_name == "DRAFT":
                 continue
             
