@@ -21,3 +21,19 @@ class Report(Base):
     project = relationship("Project", back_populates="reports")
     status = relationship("ReportStatus")
     versions = relationship("ReportVersion", back_populates="report", cascade="all, delete-orphan", order_by="desc(ReportVersion.version_num)")
+
+    @property
+    def latest_version(self):
+        return self.versions[0] if self.versions else None
+
+    @property
+    def past_versions(self):
+        return self.versions[1:] if self.versions and len(self.versions) > 1 else []
+
+    @property
+    def user_name(self):
+        return self.user.full_name if self.user else None
+
+    @property
+    def project_name(self):
+        return self.project.name if self.project else None
