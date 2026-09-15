@@ -39,7 +39,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest httpx pytest-asyncio
+          pip install pytest httpx pytest-asyncio alembic sqlalchemy asyncpg
 
       - name: Run Pytest
         env:
@@ -52,7 +52,7 @@ jobs:
           ACCESS_TOKEN_EXPIRE_MINUTES: 60
         run: |
           # First run migrations on the test database
-          alembic upgrade head
+          python -m alembic upgrade head
           
           # Then run the tests
           pytest
